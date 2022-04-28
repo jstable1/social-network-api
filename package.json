@@ -20,6 +20,7 @@
   "homepage": "https://github.com/jstable1/social-network-api#readme",
   "dependencies": {
     "express": "^4.18.0",
+    "moment": "^2.29.3",
     "mongoose": "^6.3.1"
   }
 }
