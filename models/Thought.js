@@ -5,8 +5,6 @@ dateFormat = (Date) => {
     return moment(Date).format('LLL');
 }
 
-// dateFormat = ()
-
 const ReactionSchema = new Schema(
     {
         reactionId: {

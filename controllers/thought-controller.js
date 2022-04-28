@@ -1,4 +1,4 @@
-const { Thought } = require('../models');
+const { Thought, User } = require('../models');
 
 const thoughtController = {
     getAllThoughts(req, res) {
@@ -23,9 +23,22 @@ const thoughtController = {
                 res.status(400).json(err);
             });
     },
-    createThought({ body }, res) {
-        Thought.create(body)
-            .then(dbThoughtData => res.json(dbThoughtData))
+    createThought(req, res) {
+        Thought.create(req.body)
+            .then(({ _id }) => { 
+                return User.findOneAndUpdate(
+                    { _id: req.body.userId },
+                    { $push: { thoughts: _id } },
+                    { new: true, runValidators: true } 
+                );
+            })
+            .then(dbThoughtData => {
+                if (!dbThoughtData) {
+                  res.status(404).json({ message: 'No thought found with this id!' });
+                  return;
+                }
+            res.json(dbThoughtData);
+            })
             .catch(err => res.status(400).json(err));
     },
     updateThought({ params, body }, res) {
@@ -52,7 +65,7 @@ const thoughtController = {
     },
     createReaction({ params, body}, res) {
         Thought.findOneAndUpdate(
-          { _id: params.thoughtId },
+          { _id: params.id },
           { $push: { reactions: body } },
           { new: true, runValidators: true }
         )
@@ -67,8 +80,9 @@ const thoughtController = {
       },
       deleteReaction({ params }, res) {
         Thought.findOneAndUpdate(
-          { _id: params.thoughtId },
-          { $pull: { reaction: { reactionId: params.reactionId } } },
+          //when using params the id needs to match in thought-routes
+          { _id: params.id },
+          { $pull: { reactions: { reactionId: params.reactionId } } },
           { new: true }
         )
           .then(dbThoughtData => res.json(dbThoughtData))
